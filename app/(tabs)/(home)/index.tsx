@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -25,13 +25,14 @@ import { seasonThemes } from "@/utils/seasonTheme";
 export default function HomeScreen() {
   const { colors, currentSeason } = useThemeContext();
   const { t } = useLanguage();
-  const { entries, addEntry, likeEntry, deleteEntry } = useDiary();
+  const { entries, addEntry, likeEntry, deleteEntry, currentUser, addComment } = useDiary();
   const [showSettings, setShowSettings] = useState(false);
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [showNewEntry, setShowNewEntry] = useState(false);
   const [newEntryTitle, setNewEntryTitle] = useState("");
   const [newEntryContent, setNewEntryContent] = useState("");
   const [newEntryMood, setNewEntryMood] = useState("😊");
+  const [showUserProfile, setShowUserProfile] = useState(false);
 
   const moods = ["😊", "😢", "😍", "🤔", "😴", "🤗", "😎", "🥳"];
 
@@ -81,12 +82,20 @@ export default function HomeScreen() {
           </Text>
         </View>
       </View>
-      <Pressable
-        onPress={() => setShowSettings(true)}
-        style={styles.settingsButton}
-      >
-        <IconSymbol name="gear" color={colors.primary} size={24} />
-      </Pressable>
+      <View style={styles.headerButtons}>
+        <Pressable
+          onPress={() => setShowUserProfile(true)}
+          style={styles.headerButton}
+        >
+          <IconSymbol name="person.fill" color={colors.primary} size={24} />
+        </Pressable>
+        <Pressable
+          onPress={() => setShowSettings(true)}
+          style={styles.headerButton}
+        >
+          <IconSymbol name="gear" color={colors.primary} size={24} />
+        </Pressable>
+      </View>
     </View>
   );
 
@@ -102,14 +111,16 @@ export default function HomeScreen() {
     </View>
   );
 
-  const renderEntry = ({ item }: { item: any }) => (
+  const renderEntry = useCallback(({ item }: { item: any }) => (
     <DiaryEntry
       entry={item}
       onLike={() => likeEntry(item.id)}
-      onComment={() => console.log("Comment on entry:", item.id)}
+      onComment={(comment: string) => {
+        addComment(item.id, comment);
+      }}
       onDelete={() => deleteEntry(item.id)}
     />
-  );
+  ), [likeEntry, deleteEntry, addComment]);
 
   return (
     <SeasonalBackground>
@@ -131,6 +142,7 @@ export default function HomeScreen() {
             Platform.OS !== "ios" && styles.listContentWithTabBar,
           ]}
           showsVerticalScrollIndicator={false}
+          scrollEventThrottle={16}
         />
 
         <Pressable
@@ -163,6 +175,66 @@ export default function HomeScreen() {
             />
           </Pressable>
         </Pressable>
+      </Modal>
+
+      {/* User Profile Modal */}
+      <Modal
+        visible={showUserProfile}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowUserProfile(false)}
+      >
+        <View style={[styles.profileModal, { backgroundColor: colors.background }]}>
+          <View style={[styles.profileHeader, { backgroundColor: colors.card, borderBottomColor: colors.secondary }]}>
+            <Text style={[styles.profileTitle, { color: colors.text }]}>
+              {t("profile")}
+            </Text>
+            <Pressable onPress={() => setShowUserProfile(false)}>
+              <IconSymbol name="xmark" color={colors.text} size={24} />
+            </Pressable>
+          </View>
+
+          <View style={styles.profileContent}>
+            <View style={[styles.profileCard, { backgroundColor: colors.card }]}>
+              <View style={[styles.profileAvatarLarge, { backgroundColor: colors.primary }]}>
+                <Text style={styles.profileAvatarText}>{currentUser?.avatar}</Text>
+              </View>
+              <Text style={[styles.profileName, { color: colors.text }]}>
+                {currentUser?.name}
+              </Text>
+              <Text style={[styles.profileBio, { color: colors.secondary }]}>
+                {currentUser?.bio}
+              </Text>
+
+              <View style={styles.profileStats}>
+                <View style={styles.statItem}>
+                  <Text style={[styles.statNumber, { color: colors.text }]}>
+                    {currentUser?.entries.length || 0}
+                  </Text>
+                  <Text style={[styles.statLabel, { color: colors.secondary }]}>
+                    Posts
+                  </Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={[styles.statNumber, { color: colors.text }]}>
+                    {currentUser?.followers || 0}
+                  </Text>
+                  <Text style={[styles.statLabel, { color: colors.secondary }]}>
+                    Followers
+                  </Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={[styles.statNumber, { color: colors.text }]}>
+                    {currentUser?.following || 0}
+                  </Text>
+                  <Text style={[styles.statLabel, { color: colors.secondary }]}>
+                    Following
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
       </Modal>
 
       {/* New Entry Modal */}
@@ -264,7 +336,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.5,
     borderBottomColor: "#E8E8E8",
   },
   logoContainer: {
@@ -284,12 +356,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 2,
   },
-  settingsButton: {
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  headerButton: {
     padding: 8,
   },
   listContent: {
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   listContentWithTabBar: {
     paddingBottom: 100,
@@ -420,5 +496,74 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: 14,
     fontWeight: "600",
+  },
+  profileModal: {
+    flex: 1,
+    paddingTop: 20,
+  },
+  profileHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  profileTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  profileContent: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+  },
+  profileCard: {
+    borderRadius: 12,
+    padding: 24,
+    alignItems: "center",
+    boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
+    elevation: 3,
+  },
+  profileAvatarLarge: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  profileAvatarText: {
+    fontSize: 40,
+  },
+  profileName: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  profileBio: {
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  profileStats: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#E8E8E8",
+  },
+  statItem: {
+    alignItems: "center",
+  },
+  statNumber: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
   },
 });
