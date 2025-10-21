@@ -67,6 +67,10 @@ export const DiaryProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const addComment = useCallback((entryId: string, comment: string) => {
+    if (!currentUser) {
+      console.log('Current user not available for adding comment');
+      return;
+    }
     setEntries((prev) =>
       prev.map((entry) =>
         entry.id === entryId
@@ -76,7 +80,11 @@ export const DiaryProvider: React.FC<{ children: React.ReactNode }> = ({
                 ...entry.comments,
                 {
                   id: Math.random().toString(),
-                  author: currentUser,
+                  author: {
+                    id: currentUser.id,
+                    name: currentUser.name,
+                    avatar: currentUser.avatar,
+                  },
                   content: comment,
                   date: new Date(),
                   likes: 0,

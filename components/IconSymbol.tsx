@@ -38,6 +38,8 @@ const MAPPING = {
   "phone": "phone-outlined",
   "message.fill": "chat",
   "message": "chat-bubble-outline",
+  "bubble.right": "chat-bubble",
+  "bubble.right.fill": "chat",
   "bell.fill": "notifications",
   "bell": "notifications-none",
   "heart.fill": "favorite",

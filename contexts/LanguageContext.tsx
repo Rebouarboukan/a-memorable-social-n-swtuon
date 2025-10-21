@@ -15,16 +15,16 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [language, setLanguage_] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>('en');
 
   const setLanguageCode = useCallback((lang: Language) => {
-    setLanguage_(lang);
+    setLanguageState(lang);
     setLanguage(lang);
   }, []);
 
   const t = useCallback((key: string) => {
     return I18n.t(key);
-  }, []);
+  }, [language]);
 
   return (
     <LanguageContext.Provider
