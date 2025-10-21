@@ -1,14 +1,16 @@
 import { StyleSheet, ViewStyle, TextStyle } from 'react-native';
 
 export const colors = {
-  primary: '#162456',    // Material Blue
-  secondary: '#193cb8',  // Darker Blue
-  accent: '#64B5F6',     // Light Blue
-  background: '#101824',  // Keeping dark background
-  backgroundAlt: '#162133',  // Keeping dark background
-  text: '#e3e3e3',       // Keeping light text
-  grey: '#90CAF9',       // Light Blue Grey
-  card: '#193cb8',       // Keeping dark card background
+  background: '#F8F8FF',      // Almost White - for a clean, diary-like feel
+  text: '#282828',            // Dark Gray - for readability
+  textSecondary: '#585858',   // Medium Gray - for less important text
+  primary: '#A0D6B4',         // Pastel Green - evokes nature and growth
+  secondary: '#B4A0D6',       // Pastel Purple - adds a touch of whimsy
+  accent: '#D6B4A0',          // Pastel Brown - for a nostalgic, earthy feel
+  card: '#FFFFFF',            // White - for a clean, paper-like appearance
+  highlight: '#FFFFE0',       // Light Yellow - like old paper
+  grey: '#E8E8E8',            // Light grey for borders
+  border: '#D0D0D0',          // Border color
 };
 
 export const buttonStyles = StyleSheet.create({
@@ -18,7 +20,7 @@ export const buttonStyles = StyleSheet.create({
     width: '100%',
   },
   backButton: {
-    backgroundColor: colors.backgroundAlt,
+    backgroundColor: colors.card,
     alignSelf: 'center',
     width: '100%',
   },
@@ -71,8 +73,8 @@ export const commonStyles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   card: {
-    backgroundColor: colors.backgroundAlt,
-    borderColor: colors.grey,
+    backgroundColor: colors.card,
+    borderColor: colors.border,
     borderWidth: 1,
     borderRadius: 10,
     padding: 10,
@@ -84,6 +86,6 @@ export const commonStyles = StyleSheet.create({
   icon: {
     width: 60,
     height: 60,
-    tintColor: "white",
+    tintColor: colors.text,
   },
 });
